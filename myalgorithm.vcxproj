@@ -137,7 +137,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>E:\codes\220318-myalgorithm\myalgorithm\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\codes\220318-myalgorithm\myalgorithm\src\Module;E:\codes\220318-myalgorithm\myalgorithm\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -154,6 +155,7 @@
     <ClCompile Include="src\infer_PostProcress.cpp" />
     <ClCompile Include="src\infer_RegionProposal.cpp" />
     <ClCompile Include="src\main_MyAlgorithm.cpp" />
+    <ClCompile Include="src\Module\MaskRAFT.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\infer_all.h" />
@@ -162,6 +164,7 @@
     <ClInclude Include="src\infer_OpticalFlow.h" />
     <ClInclude Include="src\infer_PostProcress.h" />
     <ClInclude Include="src\infer_RegionProposal.h" />
+    <ClInclude Include="src\Module\MaskRAFT.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\libtorch_script_model_Homo.pkl" />

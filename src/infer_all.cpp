@@ -15,7 +15,6 @@ infer_all::infer_all() {
     
     this->args["MDHead_weights"] = "weights/model_Train_MDHead_and_save_bs8_60.pkl";
 
-
     this->infer_H = new infer_HomoSwitcher(&args);
     this->infer_R = new infer_RegionProposal(&args);
     this->infer_O = new infer_OpticalFlow(&args);
@@ -59,6 +58,12 @@ void infer_all::step(Mat& img_t0, Mat& img_t1,
     //
     torch::Tensor flo_ten, fmap1_ten;
     this->infer_O->inference(img_t0, img_t1_warp, moving_mask, flo_ten, fmap1_ten);
+    //std::cout << flo_ten.sizes() << std::endl;
+    //std::cout << flo_ten.max() << std::endl;
+    //std::cout << flo_ten.min() << std::endl;
+    //std::cout << fmap1_ten.sizes() << std::endl;
+    //std::cout << fmap1_ten.max() << std::endl;
+    //std::cout << fmap1_ten.min() << std::endl;
     toc("infer_O", t_cost);t_cost = (double)cv::getTickCount();
     
     flo_out = img_t0;

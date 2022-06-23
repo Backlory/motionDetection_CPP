@@ -23,11 +23,12 @@ int main()
     std::cout << "CUDA : " << torch::cuda::is_available() << std::endl;
     std::cout << "Device count : " << torch::cuda::device_count() << std::endl;
 
+    //torch::autograd::GradMode::set_enabled(false); // 关闭梯度
 
     infer_all infer;
     string path{ R"(E:\dataset\dataset-fg-det\Janus_UAV_Dataset\train_video\video_all.mp4)"};
     cv::VideoCapture cap;
-
+    
     Mat img_t0, img_t1;
     Mat diffOrigin, diffWarp, moving_mask, out;
     Mat img_t0_enhancement, img_t0_arrow;
@@ -42,7 +43,7 @@ int main()
     cap.open(path);
     if (!cap.isOpened())
         return 0;
-
+    
     int width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
     int height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
     int framesNum = cap.get(cv::CAP_PROP_FRAME_COUNT);
@@ -55,10 +56,8 @@ int main()
     // 循环
     cap >> img_t1;
     cap >> img_t0;
-    int idx = 0;
-    while (!img_t0.empty()) {
+    for (int idx = 1; idx < framesNum-1; idx++) {
         //inference
-
         double t_cost = (double)cv::getTickCount();
 
         infer.step(img_t0, img_t1, 
@@ -78,7 +77,7 @@ int main()
             << "temp_rate_1=" << temp_rate_1 << ", "
             << "size=" << out.size;
         Mat outshow;
-        /*cv::Mat matArray[] = {img_t0, moving_mask, flo_out, out, img_t0_enhancement};*/
+        //cv::Mat matArray[] = {img_t0, moving_mask, flo_out, out, img_t0_enhancement};
         cv::Mat matArray[] = {img_t0, diffOrigin, diffWarp, moving_mask };
         cv::hconcat(matArray, 4, outshow);
         cv::imshow("test", outshow);
@@ -87,7 +86,8 @@ int main()
         // 保存
         img_t0.copyTo(img_t1);
         cap >> img_t0;
-        idx++;
     }
+    cv::destroyAllWindows();
+    cap.release();
     return 0;
 }

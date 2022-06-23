@@ -36,6 +36,9 @@
     <ClCompile Include="src\infer_RegionProposal.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\Module\MaskRAFT.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\infer_all.h">
@@ -54,6 +57,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\infer_RegionProposal.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Module\MaskRAFT.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
