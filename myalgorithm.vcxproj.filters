@@ -39,6 +39,9 @@
     <ClCompile Include="src\Module\MaskRAFT.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\Module\MDHead.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\infer_all.h">
@@ -62,10 +65,8 @@
     <ClInclude Include="src\Module\MaskRAFT.h">
       <Filter>头文件</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\libtorch_script_model_Homo.pkl">
-      <Filter>资源文件</Filter>
-    </None>
+    <ClInclude Include="src\Module\MDHead.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

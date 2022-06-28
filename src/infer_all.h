@@ -30,5 +30,7 @@ private:
 	infer_OpticalFlow *infer_O;
 	infer_MDHead *infer_M;
 	infer_PostProcress *infer_P;
+
+	Mat out_last;
 };
 

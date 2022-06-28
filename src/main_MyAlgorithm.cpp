@@ -23,7 +23,7 @@ int main()
     std::cout << "CUDA : " << torch::cuda::is_available() << std::endl;
     std::cout << "Device count : " << torch::cuda::device_count() << std::endl;
 
-    //torch::autograd::GradMode::set_enabled(false); // 关闭梯度
+    torch::autograd::GradMode::set_enabled(false); // 关闭梯度
 
     infer_all infer;
     string path{ R"(E:\dataset\dataset-fg-det\Janus_UAV_Dataset\train_video\video_all.mp4)"};
@@ -76,10 +76,15 @@ int main()
             << "effect=" << effect << ", "
             << "temp_rate_1=" << temp_rate_1 << ", "
             << "size=" << out.size;
-        Mat outshow;
-        //cv::Mat matArray[] = {img_t0, moving_mask, flo_out, out, img_t0_enhancement};
-        cv::Mat matArray[] = {img_t0, diffOrigin, diffWarp, moving_mask };
-        cv::hconcat(matArray, 4, outshow);
+        Mat outshow, outshow1, outshow2;
+        cv::Mat matArray1[] = {img_t0, diffWarp, moving_mask };
+        cv::Mat matArray2[] = { flo_out,out, img_t0_arrow };
+        cv::hconcat(matArray1, 3, outshow1);
+        cv::hconcat(matArray2, 3, outshow2);
+
+        cv::Mat matArray[] = {outshow1, outshow2};
+        cv::vconcat(matArray, 2, outshow);
+
         cv::imshow("test", outshow);
         cv::waitKey(1);
         

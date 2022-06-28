@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <tuple>
+#include <Aten/autocast_mode.h>
 
 #include <Module/MaskRAFT.h>
 
@@ -18,6 +19,10 @@ using torch::Tensor;
 
 
 /*======================================================*/
+Mat ten2img(torch::Tensor ten);
+torch::Tensor img2ten(Mat img_float);
+torch::Tensor readTensorFromPt(std::string filename);
+string replaceParamName(string name, string x1, string x2);
 
 class infer_OpticalFlow
 {

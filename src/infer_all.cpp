@@ -19,7 +19,7 @@ infer_all::infer_all() {
     this->infer_R = new infer_RegionProposal(&args);
     this->infer_O = new infer_OpticalFlow(&args);
     this->infer_M = new infer_MDHead(&args);
-    this->infer_P = new infer_PostProcress(&args);
+    this->infer_P = new infer_PostProcress();
 }
 
 infer_all::~infer_all() {
@@ -55,20 +55,32 @@ void infer_all::step(Mat& img_t0, Mat& img_t1,
     temp_rate_1 = cv::mean(moving_mask)[0] / 255;
     toc("infer_R", t_cost);t_cost = (double)cv::getTickCount();
 
-    //
     torch::Tensor flo_ten, fmap1_ten;
     this->infer_O->inference(img_t0, img_t1_warp, moving_mask, flo_ten, fmap1_ten);
-    //std::cout << flo_ten.sizes() << std::endl;
-    //std::cout << flo_ten.max() << std::endl;
-    //std::cout << flo_ten.min() << std::endl;
-    //std::cout << fmap1_ten.sizes() << std::endl;
-    //std::cout << fmap1_ten.max() << std::endl;
-    //std::cout << fmap1_ten.min() << std::endl;
-    toc("infer_O", t_cost);t_cost = (double)cv::getTickCount();
-    
-    flo_out = img_t0;
-    out = img_t0;
-    img_t0_enhancement = img_t0;
+    toc("infer_O", t_cost); t_cost = (double)cv::getTickCount();
+    // 光流可视化，4ms，没必要
+    auto flo_ten_xy = (flo_ten - flo_ten.min()) / (flo_ten.max() - flo_ten.min());
+    flo_ten_xy = flo_ten_xy.detach().cpu();
+    auto flo_ten_x = flo_ten_xy.index({ 0,0 });
+    auto flo_ten_y = flo_ten_xy.index({ 0,1 });
+    Mat flo_x_mat(640, 640, CV_32FC1);
+    Mat flo_y_mat(640, 640, CV_32FC1);
+    std::memcpy(flo_x_mat.data, flo_ten_x.data_ptr(), sizeof(float) * flo_ten_x.numel());
+    std::memcpy(flo_y_mat.data, flo_ten_y.data_ptr(), sizeof(float) * flo_ten_x.numel());
+    flo_x_mat.convertTo(flo_x_mat, CV_8UC1, 255);
+    flo_y_mat.convertTo(flo_y_mat, CV_8UC1, 255);
+    vector<Mat> flo_merge{ flo_x_mat , flo_x_mat , flo_y_mat };
+    cv::merge(flo_merge, flo_out);
+    toc("infer_O_viz", t_cost);t_cost = (double)cv::getTickCount();
+
+    //
+    auto out_ten = this->infer_M->inference(flo_ten, fmap1_ten);
+    toc("infer_M", t_cost); t_cost = (double)cv::getTickCount();
+
+    //
+    std::tie(out, img_t0_enhancement, img_t0_arrow, out_last) = this->infer_P->inference(
+        img_t0, H_warp, out_last, out_ten, flo_ten
+    );
 
     //三通道处理
     cv::cvtColor(diffOrigin, diffOrigin, cv::COLOR_GRAY2BGR);
