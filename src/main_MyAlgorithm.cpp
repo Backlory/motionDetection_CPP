@@ -25,8 +25,6 @@ int main()
 
     torch::autograd::GradMode::set_enabled(false); // 关闭梯度
 
-    infer_all infer;
-    string path{ R"(E:\dataset\dataset-fg-det\Janus_UAV_Dataset\train_video\video_all.mp4)"};
     cv::VideoCapture cap;
     
     Mat img_t0, img_t1;
@@ -38,11 +36,28 @@ int main()
     Mat flo_out;
     cv::namedWindow("test", cv::WINDOW_FREERATIO);
 
+    infer_all infer;
+    string path{ R"(E:\dataset\dataset-fg-det\Janus_UAV_Dataset\train_video\video_all.mp4)" };
+    path = R"(E:\dataset\dataset-fg-det\Janus_UAV_Dataset\train_video\video_all.mp4)";
+    path = R"(E:\dataset\dataset-fg-det\video3.mp4)";
+    while (true) {
+        std::cout << "请输入视频路径：" << std::endl;
+        std::cin >> path;
+        if (path.empty()) {
+            path = R"(E:\dataset\dataset-fg-det\Janus_UAV_Dataset\train_video\video_all.mp4)";
+        }
+        cap.open(path);
+        if (cap.isOpened()) {
+            break;
+        }
+        else {
+            cap.release();
+        }
+    }
+
     // 初始化
     //path = get_path();
-    cap.open(path);
-    if (!cap.isOpened())
-        return 0;
+    
     
     int width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
     int height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
@@ -59,8 +74,11 @@ int main()
     for (int idx = 1; idx < framesNum-1; idx++) {
         //inference
         double t_cost = (double)cv::getTickCount();
+        Mat img_t0_resized, img_t1_resized;
+        cv::resize(img_t0, img_t0_resized, cv::Size(512, 512));
+        cv::resize(img_t1, img_t1_resized, cv::Size(512, 512));
 
-        infer.step(img_t0, img_t1, 
+        infer.step(img_t0_resized, img_t1_resized,
             diffOrigin, diffWarp, moving_mask, out,
             img_t0_enhancement, img_t0_arrow,
             effect, alg_type, temp_rate_1, flo_out);
@@ -77,8 +95,8 @@ int main()
             << "temp_rate_1=" << temp_rate_1 << ", "
             << "size=" << out.size;
         Mat outshow, outshow1, outshow2;
-        cv::Mat matArray1[] = {img_t0, diffWarp, moving_mask };
-        cv::Mat matArray2[] = { flo_out,out, img_t0_arrow };
+        cv::Mat matArray1[] = { img_t0_resized, diffWarp, moving_mask };
+        cv::Mat matArray2[] = { flo_out,out, img_t0_enhancement };
         cv::hconcat(matArray1, 3, outshow1);
         cv::hconcat(matArray2, 3, outshow2);
 

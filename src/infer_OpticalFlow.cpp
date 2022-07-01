@@ -81,69 +81,104 @@ infer_OpticalFlow::infer_OpticalFlow(std::map<string, string>* pargs):model(32, 
 	torch::serialize::OutputArchive archiveO;
 	auto params = this->model->named_parameters();
 	for (auto name : params.keys()) {
-		std::cout << name << std::endl;
+		//std::cout << name << std::endl;
 		auto param = params[name];
-		std::cout << "sizes = " << param.sizes() << std::endl;
-		std::cout << std::endl;
-
+		//std::cout << "flow-params sizes = " << param.sizes() << std::endl;
+		//
 		auto name_replaced = replaceParamName(name, "cnet.norm1.0.", "cnet.norm1.");
 		name_replaced = replaceParamName(name_replaced, ".0.norm1.0.", ".0.norm1.");
 		name_replaced = replaceParamName(name_replaced, ".0.norm2.0.", ".0.norm2.");
 		name_replaced = replaceParamName(name_replaced, ".1.norm1.0.", ".1.norm1.");
 		name_replaced = replaceParamName(name_replaced, ".1.norm2.0.", ".1.norm2.");
-		torch::Tensor ten1 = readTensorFromPt("res/sintel-weights/" + name_replaced + ".pkl");
-		assert(param.sizes() == ten1.sizes());
-		assert(param.dtype() == ten1.dtype());
-		assert(param.device() == ten1.device());
-		archiveO.write(name, ten1, true);
+		if (name_replaced.find("num_batches") == name_replaced.npos) {
+			torch::Tensor ten1 = readTensorFromPt("res/sintel-weights/" + name_replaced + ".pkl");
+			assert(param.sizes() == ten1.sizes());
+			assert(param.dtype() == ten1.dtype());
+			assert(param.device() == ten1.device());
+			archiveO.write(name, ten1, false);
+			//std::cout << param.sizes() << ":" << ten1.sizes() << std::endl;
+			//std::cout << param.dtype() << ":" << ten1.dtype() << std::endl;
+		}
+		else {
+			//std::cout << "使用原始张量！" << std::endl;
+			archiveO.write(name, param, false);
+			//std::cout << param.dtype() << "=" << param.sizes() << std::endl;
+		}
+		//std::cout << std::endl;
 	}
 	auto buffrs = this->model->named_buffers();
 	for (auto name : buffrs.keys()) {
-		std::cout << name << std::endl;
+		//std::cout << name << std::endl;
 		auto buffr = buffrs[name];
-		std::cout << "sizes = " << buffr.sizes() << std::endl;
-		std::cout << std::endl;
-
+		//std::cout << "flow-buffrs sizes = " << buffr.sizes() << std::endl;
+		//
 		auto name_replaced = replaceParamName(name, "cnet.norm1.0.", "cnet.norm1.");
 		name_replaced = replaceParamName(name_replaced, ".0.norm1.0.", ".0.norm1.");
 		name_replaced = replaceParamName(name_replaced, ".0.norm2.0.", ".0.norm2.");
 		name_replaced = replaceParamName(name_replaced, ".1.norm1.0.", ".1.norm1.");
 		name_replaced = replaceParamName(name_replaced, ".1.norm2.0.", ".1.norm2.");
-		torch::Tensor ten1 = readTensorFromPt("res/sintel-weights/" + name_replaced + ".pkl");
-		assert(buffr.sizes() == ten1.sizes());
-		assert(buffr.dtype() == ten1.dtype());
-		assert(buffr.device() == ten1.device());
-		archiveO.write(name, ten1, true);
+		if (name_replaced.find("num_batches") == name_replaced.npos) {
+			torch::Tensor ten1 = readTensorFromPt("res/sintel-weights/" + name_replaced + ".pkl");
+			assert(buffr.sizes() == ten1.sizes());
+			assert(buffr.dtype() == ten1.dtype());
+			assert(buffr.device() == ten1.device());
+			archiveO.write(name, ten1, true);
+			//std::cout << buffr.sizes() << ":" << ten1.sizes() << std::endl;
+			//std::cout << buffr.dtype() << ":" << ten1.dtype() << std::endl;
+		}
+		else {
+			//std::cout << "使用原始张量！" << std::endl;
+			archiveO.write(name, buffr, true);
+			//std::cout << buffr.dtype() << "=" << buffr.sizes() << std::endl;
+		}
+		//std::cout << std::endl;
 	}
 	archiveO.save_to("res/temp");
 	//3.读取Archive文件，并将其中的参数手动转入模型中
+	std::cout << "3读取Archive文件，并将其中的参数手动转入模型中" << std::endl;
 	torch::serialize::InputArchive archiveI;
 	archiveI.load_from("res/temp");
 	torch::NoGradGuard no_grad;
 	auto params_in = this->model->named_parameters(true /*recurse*/);
 	auto buffers_in = this->model->named_buffers(true /*recurse3--*/);
-	for (auto& val : params_in)
+	for (auto& val : params_in) {
 		archiveI.read(val.key(), val.value(), /*is_buffer*/ false);
-	for (auto& val : buffers_in)
+
+	}
+	for (auto& val : buffers_in) {
 		archiveI.read(val.key(), val.value(), /*is_buffer*/ true);
+
+	}
 	//4.将当前模型的结构保存下来，送入python做参数检查
+	std::cout << "4.将当前模型的结构保存下来，送入python做参数检查" << std::endl;
 	torch::serialize::OutputArchive archiveO_model_check2;
 	this->model->save(archiveO_model_check2);
 	archiveO_model_check2.save_to("res/sintel-weight-cpp.pt");
 
 
 	//// 设备
-	if((*this->args)["ifUseGPU"]=="true") {
-		if (torch::cuda::is_available())
+	std::cout << "设备" << std::endl;
+	if ((*this->args)["ifUseGPU"] == "true") {
+		std::cout << "检查GPU情况..." << std::endl;
+		if (torch::cuda::is_available()) {
+			std::cout << "GPU就绪..." << std::endl;
 			this->device = torch::kCUDA;
+		}
+		else {
+			std::cout << "GPU未就绪..." << std::endl;
+			this->device = torch::kCPU;
+		}
 	}
 	else {
 		this->device = torch::kCPU;
 	}
+	std::cout << "送入设备：" << this->device << std::endl;
+
 	this->model->to(this->device);
 	this->model->eval();
 	this->last_flow = this->last_flow.to(this->device);
 	//
+	std::cout << "池化" << std::endl;
 	this->Pool = torch::nn::MaxPool2d(
 		torch::nn::MaxPool2dOptions({ this->gridLength, this->gridLength })
 	);
@@ -175,6 +210,7 @@ void infer_OpticalFlow::inference(Mat img_t0, Mat img_t1_warp, Mat moving_mask,
 	// mask处理
 	moving_mask.convertTo(moving_mask, CV_32FC1, 1.0F / 255.0F);
 	torch::Tensor moving_mask_ten = img2ten(moving_mask);
+	auto m = torch::max_pool2d(moving_mask_ten, this->gridLength, this->gridLength);
 	moving_mask_ten = this->Pool->forward({ moving_mask_ten });
 
 	

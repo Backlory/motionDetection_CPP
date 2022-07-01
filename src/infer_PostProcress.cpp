@@ -69,9 +69,9 @@ tuple<Mat, Mat, Mat, Mat> infer_PostProcress::inference(
 			double dy = v_h_warp - y_center;
 			
 			double k = pow((pow(dx, 2) + pow(dy, 2)), 0.5);
-			if (k < 50.0F) {
-				dx *= 50.0F / k;
-				dy *= 50.0F / k;
+			if (k < 10.0F) {
+				dx = 0;
+				dy = 0;
 			}
 			
 			//¼ýÍ·

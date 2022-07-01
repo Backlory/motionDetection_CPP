@@ -94,13 +94,6 @@ BasicEncoderImpl::BasicEncoderImpl(int output_dim, string norm_fn, float dropout
 
 	// 正则化模块装填
 	this->norm1_bn = torch::nn::BatchNorm2d(torch::nn::BatchNorm2dOptions(64));
-	std::cout << this->norm1_bn << std::endl;
-	auto m = this->norm1_bn->named_parameters();
-	for (auto w : m) {
-		std::cout << w.key() << std::endl;
-		std::cout << w.value().sizes() << std::endl;
-	}
-
 	this->norm1_in = torch::nn::InstanceNorm2d(torch::nn::InstanceNorm2dOptions(64));
 	if (norm_fn == "batch") {
 		this->norm1->push_back(this->norm1_bn);

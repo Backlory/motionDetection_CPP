@@ -63,8 +63,8 @@ void infer_all::step(Mat& img_t0, Mat& img_t1,
     flo_ten_xy = flo_ten_xy.detach().cpu();
     auto flo_ten_x = flo_ten_xy.index({ 0,0 });
     auto flo_ten_y = flo_ten_xy.index({ 0,1 });
-    Mat flo_x_mat(640, 640, CV_32FC1);
-    Mat flo_y_mat(640, 640, CV_32FC1);
+    Mat flo_x_mat(h,w, CV_32FC1);
+    Mat flo_y_mat(h,w, CV_32FC1);
     std::memcpy(flo_x_mat.data, flo_ten_x.data_ptr(), sizeof(float) * flo_ten_x.numel());
     std::memcpy(flo_y_mat.data, flo_ten_y.data_ptr(), sizeof(float) * flo_ten_x.numel());
     flo_x_mat.convertTo(flo_x_mat, CV_8UC1, 255);
